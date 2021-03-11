@@ -9,7 +9,7 @@ degree=3
 f = open("vote_list.txt","r")
 vote_data = f.read().split("\n")
 
-def validate_hash(hash_code):
+def compute_nonce(hash_code):
     global block_size,degree
     rule = "0"*degree
     nonce=0
@@ -29,7 +29,7 @@ block_count = 0
 
 for i in range(0,len(vote_data)-block_size+1,block_size):
     current_hash = blockchain[len(blockchain)-1].block_hash+"".join(vote_data[i:i+block_size])
-    validation_nonce = validate_hash(current_hash)
+    validation_nonce = compute_nonce(current_hash)
     block = Block(blockchain[len(blockchain)-1].block_hash,vote_data[i:i+block_size],validation_nonce)
     blockchain.append(block)
     block_count+=1
