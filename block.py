@@ -9,5 +9,5 @@ class Block:
     def get_block_data(self):
         print("===========================")
         print("Prev hash:{} , Block hash:{}".format(self.prev_hash,self.block_hash))
-        # print("Transaction record:")
-        # print("\n".join(self.transactions))
+        print("Transaction record:")
+        print("\n".join(self.transactions))
