@@ -7,60 +7,42 @@ from random import randint
 import uuid
 
 lock = threading.Lock()
-PORT_NUMBER = 9964
-IP_NUMBER ="127.0.0.1"
+BTP_PORT_NUMBER = 9942
+LOCAL_HOST ="127.0.0.1"
 class Node(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.id = uuid.uuid4()
         self.node_dict = {}
+        self.node_port = randint(1000,5000)
 
     def run(self):
-        print("node started. listening port:{}".format(self.port))
-        self.clientSocket.connect(("127.0.0.1",9090))
-        self.bootstrap_socket = socket.socket()
-        serverSocket.bind(("127.0.0.1",9090));
+        data = ""
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            print("node started. sending RDY message to bootstrap node.")
+            s.connect((LOCAL_HOST,BTP_PORT_NUMBER))
+            msg = "RDY {}".format(self.node_port)
+            s.send(msg.encode())
+            data = s.recv(1024).decode()
+        if data=="REJ":
+            print("rejected by bootstrap node.")
+        elif data=="WEL":
+            print("accepted by bootstrap node. starting to listening port {}".format(self.node_port))
+            server_socket = socket.socket()
+            server_socket.bind((LOCAL_HOST,self.node_port))
+            server_socket.listen()
+            while True:
+                conn_socket, addr = server_socket.accept()
+                msg = conn_socket.recv(1024).decode().split()
+                if msg[0]=="LST":
+                    self.list=[]
+                    print("node list received by bootstrap node.")
+                    for port in msg[1:]:
+                        self.list.append(port)
+                    lst = " ".join(self.list)
+                    
+                    print("read thread list updated.\n{}".format(self.list))
 
-        serverSocket.listen();
-        while True:
-            
-            conn_socket, addr = self.server_socket.accept()
-            thread_qu = queue.Queue()
-            read_thr = ReadThread(conn_socket,addr,thread_qu)
-            write_thr = WriteThread(conn_socket,addr,thread_qu)
-            read_thr.start()
-            write_thr.start()
-
-
-
-
-class ReadThread(threading.Thread):
-    def __init__(self,conn,addr,write_qu):
-        threading.Thread.__init__(self)
-        self.conn = conn
-        self.write_qu = write_qu
-        self.addr=addr
-    def run(self):
-        print("Connection established with" + str(self.addr) + ", ReadThread started.")
-        while True:
-            msg = self.conn.recv(1024).decode()
-            if msg=="WEL":
-                self.write_qu.put()
-            print("added to queue {}".format(msg))
-
-class WriteThread(threading.Thread):
-    def __init__(self,conn,addr,write_qu):
-        threading.Thread.__init__(self)
-        self.conn = conn
-        self.write_qu = write_qu
-        self.addr=addr
-    def run(self):
-        while True:
-            send_msg = self.write_qu.get()
-            send_msg = send_msg.rstrip("\n")
-            send_msg = send_msg+"\n"
-            
-            self.conn.send(send_msg.encode())
 
 if __name__=="__main__":
     for i in range(10):
