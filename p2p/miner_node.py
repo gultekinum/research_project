@@ -7,7 +7,7 @@ from random import randint
 import uuid
 
 lock = threading.Lock()
-BTP_PORT_NUMBER = 9942
+BTP_PORT_NUMBER = 9937
 LOCAL_HOST ="127.0.0.1"
 class Node(threading.Thread):
     def __init__(self):
@@ -42,9 +42,10 @@ class Node(threading.Thread):
                     lst = " ".join(self.list)
                     
                     print("read thread list updated.\n{}".format(self.list))
-
+                if msg[0]=="VTS":
+                    print(msg[1:])
 
 if __name__=="__main__":
-    for i in range(10):
+    for i in range(1):
         n = Node()
         n.start()
