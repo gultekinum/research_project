@@ -8,7 +8,7 @@ import uuid
 import time
 
 lock = threading.Lock()
-BTP_PORT_NUMBER = 9937
+BTP_PORT_NUMBER = int(sys.argv[1])
 LOCAL_HOST ="127.0.0.1"
 class Node(threading.Thread):
     def __init__(self):
@@ -31,24 +31,27 @@ class Node(threading.Thread):
         elif data=="WEL":
             msg = s.recv(1024).decode().split()
             if msg[0]=="LST":
+                parsed = msg[1].split(":")
                 print("accepted by bootstrap node. getting list of miner nodes.")
                 self.list=[]
                 print("node list received by bootstrap node.")
-                for port in msg[1:]:
+                for port in parsed:
                     self.list.append(port)
                 f = open("vote_list.txt","r")
                 vote_data = f.read().split("\n")
-                
+                cycle = 0
                 for i in range(0,len(vote_data)-self.broadcast_size,self.broadcast_size):
                     time.sleep(5)
                     vote_partial = vote_data[i:i+self.broadcast_size]
                     votes = "\n".join(vote_partial)
+                    msg = "VTS {}\n{}".format(cycle,votes)
+                    print("Broadcasting {} votes to all miners.".format(self.broadcast_size))
+                    print(msg)
                     for port in self.list:
-                        msg = "VTS \n{}".format(votes)
-                        print("Broadcasting {} votes to all miners.".format(self.broadcast_size))
                         s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
                         s.connect((LOCAL_HOST,int(port)))
                         s.send(msg.encode())
+                    cycle+=1
                         
                         
 

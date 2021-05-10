@@ -4,10 +4,13 @@ import queue
 import sys
 import time
 from random import randint
+from block import Block
 
 lock = threading.Lock()
 LOCAL_HOST ="127.0.0.1"
-PORT_NUMBER = 9937
+PORT_NUMBER = int(sys.argv[1])
+
+
 class BootstrapNode(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -27,8 +30,12 @@ class BootstrapNode(threading.Thread):
                 print("connection request received by node, {}".format(addr))
                 self.port_list.add(msg[1])
                 print("accepting new node working on port, {}".format(msg[1]))
-                conn_socket.send("WEL".encode())
-                ports = " ".join(self.port_list)
+                node_id = (len(self.port_list)-1)
+                response = "WEL {}".format(node_id)
+                conn_socket.send(response.encode())
+                #conn_socket.send("CHN".encode())
+
+                ports = ":".join(self.port_list)
                 for port in self.port_list:
                     msg = "LST {}".format(ports)
                     print("sending updated list to all miner nodes")
@@ -38,7 +45,7 @@ class BootstrapNode(threading.Thread):
             if msg[0]=="RDY(V)":
                 print("connection request received by voter node, {}".format(addr))
                 conn_socket.send("WEL".encode())
-                ports = " ".join(self.port_list)
+                ports = ":".join(self.port_list)
                 print("sending miner list to voter node")
                 msg = "LST {}".format(ports)
                 conn_socket.send(msg.encode())
