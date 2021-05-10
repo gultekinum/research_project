@@ -47,13 +47,15 @@ class Node(threading.Thread):
                     msg = "VTS {}\n{}".format(cycle,votes)
                     print("Broadcasting {} votes to all miners.".format(self.broadcast_size))
                     print(msg)
-                    for port in self.list:
-                        s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
-                        s.connect((LOCAL_HOST,int(port)))
-                        s.send(msg.encode())
+                    self.broadcast(msg)
                     cycle+=1
+                self.broadcast("FIN")
                         
-                        
+    def broadcast(self,msg):
+        for port in self.list:
+            s =  socket.socket(socket.AF_INET, socket.SOCK_STREAM)    
+            s.connect((LOCAL_HOST,int(port)))
+            s.send(msg.encode())          
 
             
 
