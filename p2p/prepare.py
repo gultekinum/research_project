@@ -10,9 +10,6 @@ def prepare_vote_data(person_count):
     for i in range(person_count):
         num = randint(10000000000,99999999999)
         party = random.choice(party_list)
-        while num in person_list:
-            num = random.randint(10000000000,99999999999)
-            party = random.choice(party_list)
         person_list.append("{}:{}".format(str(num),party))
     f = open("vote_list.txt","w")
     f.write("\n".join(person_list))

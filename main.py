@@ -4,7 +4,7 @@ import random
 
 block_size = 10
 blockchain = []
-degree=3
+degree=5
 
 f = open("vote_list.txt","r")
 vote_data = f.read().split("\n")
@@ -32,9 +32,8 @@ for i in range(0,len(vote_data)-block_size+1,block_size):
     validation_nonce = compute_nonce(current_hash)
     block = Block(blockchain[len(blockchain)-1].block_hash,vote_data[i:i+block_size],validation_nonce)
     blockchain.append(block)
+    block.get_block_data()
     block_count+=1
 
-for block in blockchain:
-    block.get_block_data()
 
 

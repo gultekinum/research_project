@@ -50,7 +50,7 @@ class BootstrapNode(threading.Thread):
                 msg = "LST {}".format(ports)
                 conn_socket.send(msg.encode())
 
-                    
+                
                 
                 
 
