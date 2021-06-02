@@ -1,5 +1,4 @@
 from datetime import datetime
-from miner import BLOCK_CHAIN
 import os
 import socket,pickle
 import threading
@@ -18,6 +17,7 @@ LOCAL_HOST ="127.0.0.1"
 STOP_FLAG = False
 NODE_ID = -1
 BLOCK_CHAIN = []
+
 
 class Listener(threading.Thread):
     def __init__(self,port,lqu):
@@ -46,16 +46,16 @@ class Listener(threading.Thread):
 
 
 class Sender(threading.Thread):
-    global DEGREE
     def __init__(self,port,wqu):
         threading.Thread.__init__(self)
         self.entr_pack = EntrancePacket(0,0,0,0)
         self.wqu = wqu
         self.port = port
     def run(self):
-        global NODE_ID
+        global NODE_ID,BLOCK_CHAIN
         self.entr_pack= self.join_network()
         NODE_ID = self.entr_pack.node_id
+        BLOCK_CHAIN = self.entr_pack.chain
         while True:
             data = squ.get()
             pack = pickle.loads(data)
@@ -120,8 +120,23 @@ def validate(nonce,vote_pack):
         else:
             return False
 
-def add_chain(block):
-    pass
+def save_chain():
+    file_name = "node{}_chain_file.txt".format(NODE_ID)
+    f = open(file_name,"w")
+    block_data=""
+    for block in BLOCK_CHAIN:
+        block_data += block.get_data()
+    f.write(block_data)
+    f.close()
+
+def add_chain(vote_pack,nonce):
+    vote_string = "".join(vote_pack.votes)
+    temp_string = vote_string+str(nonce)
+    block_hash = hashlib.sha256(temp_string.encode()).hexdigest()
+    block = Block(BLOCK_CHAIN[len(BLOCK_CHAIN)-1].block_hash,block_hash,vote_pack.votes,nonce)
+    BLOCK_CHAIN.append(block)
+    save_chain()
+
 
 if __name__=="__main__":
     lqu = queue.Queue()
@@ -132,12 +147,19 @@ if __name__=="__main__":
     s = Sender(port,squ)
     s.start()
     vote_pack = VotePacket(0,0,0,0,0)
+    val_dict = {}
+    active_node_count = 0
+    nonce = -1
+    wait_next_cycle = True
+
     while True:
         data = lqu.get()
         pack = pickle.loads(data)
         if pack.identifier=="LST":
+            active_node_count=len(pack.content)
             squ.put(data)
         if pack.identifier=="VTS":
+            wait_next_cycle = False
             vote_pack = pack
             cycle = pack.cycle
             seed = pack.seed
@@ -152,14 +174,31 @@ if __name__=="__main__":
                 val_pack = ValPacket(datetime.now(),NODE_ID,block.nonce,cycle)
                 val_str = pickle.dumps(val_pack)
                 squ.put(val_str)
-        if pack.identifier=="VAL":
-            if validate(pack.nonce,vote_pack):
-                print("nonce value[{}] validated by node[{}]".format(pack.nonce,NODE_ID))
-                snd_pack = MessagePacket("OKK",NODE_ID)
-                snd_str = pickle.dumps(snd_pack)
-                squ.put(snd_str)
-        if pack.identifier=="OKK":
-            pass
+        if wait_next_cycle==False:
+            if pack.identifier=="VAL":
+                if validate(pack.nonce,vote_pack):
+                    print("nonce value[{}] validated by node[{}]".format(pack.nonce,NODE_ID))
+                    snd_pack = MessagePacket("OKK",pack.nonce)
+                    snd_str = pickle.dumps(snd_pack)
+                    squ.put(snd_str)
+                else:
+                    snd_pack = MessagePacket("REJ",pack.nonce)
+                    snd_str = pickle.dumps(snd_pack)
+                    squ.put(snd_str)
+            if pack.identifier=="OKK":
+                nonce = pack.content
+                print(val_dict)
+                if nonce not in val_dict:
+                    val_dict[nonce]=1
+                else:
+                    val_dict[nonce]+=1
+                if val_dict[nonce]>=1:
+                    add_chain(vote_pack,nonce)
+                    val_dict[nonce]=-99999
+        else:
+            print("waiting next cycle for vote data.")
+
+            
 
         
 

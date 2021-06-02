@@ -52,13 +52,17 @@ class Sender(threading.Thread):
             data = self.squ.get()
             pack = pickle.loads(data)
             print(pack.identifier)
-            if pack.identifier=="OKK":
+            if pack.identifier=="NXT":
                 if len(self.votes)==0:
                     print("no vote left in repository..")
                 else:
                     print("cycle[{}] completed. broadcasting next cycle..".format(self.cycle))
                     self.cycle+=1
                     self.bcast_vote()
+            if pack.identifier=="LST":
+                self.entr_pack.node_list=pack.content
+
+            
 
             
     def join_network(self):
@@ -120,6 +124,6 @@ if __name__=="__main__":
     while True:
         data = lqu.get()
         pack = pickle.loads(data)
-        if pack.identifier=="OKK":
-            squ.put(data)
+        squ.put(data)
+        
         
