@@ -1,6 +1,0 @@
-consensus ve validation işlemleri farklı işlemler, consensur proof of work ile sağlanıyor fakat validation kısmında transactionların legit olup olmadığı nasıl kontrol ediliyor ?
-sha256 şifrelenmiş bir metin geri çevrilemiyor, o zaman daha sonrasında kayıtlar nasıl kontrol ediliyor ?
-https://bitcoin.stackexchange.com/questions/8031/what-are-bitcoin-miners-really-solving
-transaction kayıtları string yerine obje olmalı, o nasıl olacak ?
-transaction kayıtları direkt olarak bloğun içinde tutulacak mı ?
-threadler yaratıp, bunları miner yapsak, (sanal bir ağ kurmak gerekiyor)

@@ -1,4 +1,5 @@
-import socket
+from os import stat
+import socket,pickle
 import threading
 import queue
 import sys
@@ -7,6 +8,7 @@ from random import randint
 import uuid
 import hashlib
 from block import Block
+from idcard import IdentityCard
 
 lock = threading.Lock()
 BTP_PORT_NUMBER = int(sys.argv[1])
@@ -14,6 +16,7 @@ LOCAL_HOST ="127.0.0.1"
 SEED_INTERVAL = 1000000
 DEGREE=5
 BLOCK_CHAIN = []
+
 
 class Miner:
     global BTP_PORT_NUMBER,LOCAL_HOST,DEGREE
@@ -92,12 +95,16 @@ class Miner:
             s.connect((LOCAL_HOST,BTP_PORT_NUMBER))
             msg = "RDY {}".format(self.node_port)
             s.send(msg.encode())
-            data = s.recv(1024).decode().split()
-            if data[0]=="REJ":
-                return False
-            elif data[0]=="WEL":
-                self.id = int(data[1]) 
-                return True
+            state = False
+            while True:
+                data = s.recv(1024).decode().split()
+                if data[0]=="REJ":
+                    state = False
+                elif data[0]=="WEL":
+                    state = True
+                    self.id = int(data[1])
+                 
+                    return True
 
 class MiningOp(threading.Thread):
     def __init__(self,queue,id):

@@ -1,4 +1,4 @@
-import socket
+import socket,pickle
 import threading
 import queue
 import sys
@@ -6,6 +6,7 @@ import time
 from random import randint
 import uuid
 import time
+from packets import VotePacket,IdentityPacket,MessagePacket
 
 lock = threading.Lock()
 BTP_PORT_NUMBER = int(sys.argv[1])
@@ -15,7 +16,7 @@ class Node(threading.Thread):
         threading.Thread.__init__(self)
         self.id = uuid.uuid4()
         self.node_dict = {}
-        self.node_port = randint(1000,5000)
+        self.port = randint(1000,5000)
         self.list = []
         self.broadcast_size = 10
     def run(self):
@@ -23,12 +24,15 @@ class Node(threading.Thread):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("node started. sending RDY message to bootstrap node.")
         s.connect((LOCAL_HOST,BTP_PORT_NUMBER))
-        msg = "RDY(V) {}".format(self.node_port)
-        s.send(msg.encode())
-        data = s.recv(1024).decode()
-        if data=="REJ":
-            print("rejected by bootstrap node.")
-        elif data=="WEL":
+        snd_pack = MessagePacket("RDY",self.port)
+        snd_str = pickle.dumps(snd_pack)
+        s.send(snd_str)
+        
+        data = s.recv(4096)
+        pack = pickle.loads(data)
+
+        
+        if data=="WEL":
             msg = s.recv(1024).decode().split()
             if msg[0]=="LST":
                 parsed = msg[1].split(":")
