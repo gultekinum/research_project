@@ -38,6 +38,7 @@ class BootstrapNode(threading.Thread):
             data = conn_socket.recv(4096)
             pack = pickle.loads(data)
             if pack.identifier=="RDY":
+                print("\n==========JOIN REQUEST==========")
                 print("connection request received by node, {}".format(addr))
                 print("accepting new node working on port, {}".format(pack.content))
                 self.port_list.add(pack.content)
@@ -46,8 +47,9 @@ class BootstrapNode(threading.Thread):
                 card = EntrancePacket(datetime.now(),node_id,self.port_list,BLOCK_CHAIN)
                 snd = pickle.dumps(card)
                 conn_socket.send(snd)
-                print("identity card sent to node[{}]".format(node_id))
+                print("entrance packet sent to node[{}]".format(node_id))
                 print("sending updated list to all miner nodes")
+                print("=================================\n")
                 snd_pack = MessagePacket("LST",self.port_list)
                 snd_str = pickle.dumps(snd_pack)
                 self.bcast_packet(snd_str)
@@ -78,7 +80,9 @@ class BootstrapNode(threading.Thread):
             s.connect((LOCAL_HOST,int(port)))
             s.send(pack)
         except:
+            print("\n==============ERROR==============")
             print("connection to node[{}] failed.".format(port))
+            print("=================================\n")
         
 
 

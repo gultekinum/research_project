@@ -10,13 +10,15 @@ import hashlib
 from block import Block
 from datetime import datetime
 from packets import EntrancePacket,VotePacket,MessagePacket
+from rich.console import Console
+from rich.table import Column, Table
 
 
 BTP_PORT_NUMBER = int(sys.argv[1])
 LOCAL_HOST ="127.0.0.1"
 DEGREE = 5
 BLOCK_SIZE = 10
-SEED_INTERVAL = 1000000
+SEED_INTERVAL = 5000000
 
 class Listener(threading.Thread):
     def __init__(self,port,lqu):
@@ -32,7 +34,6 @@ class Listener(threading.Thread):
                 conn_socket, addr = server_socket.accept()
                 data = conn_socket.recv(4096)
                 pack = pickle.loads(data)
-                print(pack.identifier)
                 self.lqu.put(data)
 
 
@@ -51,12 +52,10 @@ class Sender(threading.Thread):
         while True:
             data = self.squ.get()
             pack = pickle.loads(data)
-            print(pack.identifier)
             if pack.identifier=="NXT":
                 if len(self.votes)==0:
                     print("no vote left in repository..")
                 else:
-                    print("cycle[{}] completed. broadcasting next cycle..".format(self.cycle))
                     self.cycle+=1
                     self.bcast_vote()
             if pack.identifier=="LST":
@@ -67,6 +66,7 @@ class Sender(threading.Thread):
             
     def join_network(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as conn:
+            print("\n=========JOINING NETWORK========")
             print("trying to connect bootstrap node.")
             conn.connect((LOCAL_HOST,BTP_PORT_NUMBER))
             
@@ -76,8 +76,8 @@ class Sender(threading.Thread):
 
             data = conn.recv(4096)
             entr_pack = pickle.loads(data)
-            print("joined network. id card received by bootstrap.")
-            
+            print("joined network. entrance packet received by bootstrap.")
+            print("=================================\n")
             return entr_pack
 
     def bcast_vote(self):
@@ -93,6 +93,14 @@ class Sender(threading.Thread):
                 snd_votes = self.votes[0:BLOCK_SIZE]
                 self.votes=self.votes[BLOCK_SIZE:]
             snd_pack = VotePacket(datetime.now(),0,DEGREE,snd_votes,self.cycle)
+            console = Console()
+            table = Table(show_header=True, header_style="bold magenta")
+            table.add_column("Vote Data")
+            table.add_row("\n".join(snd_votes))
+            print("\n=====BROADCASTING CYCLE[{}]=====".format(self.cycle))
+            print("next cycle signal received from bootstrap")
+            console.print(table)
+            print("=================================\n")
             for port in self.entr_pack.node_list:
                 if port!=self.port:
                     snd_str = pickle.dumps(snd_pack)
