@@ -1,3 +1,6 @@
+#BOOTSTRAP NODE
+#filename: bootstrap.py
+
 import socket,pickle
 import threading
 import queue
@@ -28,7 +31,7 @@ class BootstrapNode(threading.Thread):
         self.server_socket.bind((self.host,self.port))
         self.server_socket.listen()
         self.chain = []
-        print("bootstrap node started. listening port:{}".format(self.port))
+        print("bootstrap node started.listening port:{}".format(self.port))
     def run(self):
         vote_pack = VotePacket(0,0,0,0,0)
         val_dict = {}
@@ -39,12 +42,15 @@ class BootstrapNode(threading.Thread):
             pack = pickle.loads(data)
             if pack.identifier=="RDY":
                 print("\n==========JOIN REQUEST==========")
-                print("connection request received by node, {}".format(addr))
-                print("accepting new node working on port, {}".format(pack.content))
+                print("connection request received by"
+                 " node, {}".format(addr))
+                print("accepting new node working on"
+                " port, {}".format(pack.content))
                 self.port_list.add(pack.content)
                 active_node_count = len(self.port_list)
                 node_id = (len(self.port_list)-1)
-                card = EntrancePacket(datetime.now(),node_id,self.port_list,BLOCK_CHAIN)
+                card = EntrancePacket(datetime.now(),node_id,
+                self.port_list,BLOCK_CHAIN)
                 snd = pickle.dumps(card)
                 conn_socket.send(snd)
                 print("entrance packet sent to node[{}]".format(node_id))
@@ -99,7 +105,8 @@ class BootstrapNode(threading.Thread):
         vote_string = "".join(vote_pack.votes)
         temp_string = vote_string+str(nonce)
         block_hash = hashlib.sha256(temp_string.encode()).hexdigest()
-        block = Block(BLOCK_CHAIN[len(BLOCK_CHAIN)-1].block_hash,block_hash,vote_pack.votes,nonce)
+        block = Block(BLOCK_CHAIN[len(BLOCK_CHAIN)-1].block_hash,
+        block_hash,vote_pack.votes,nonce)
         BLOCK_CHAIN.append(block)
         self.save_chain()
 

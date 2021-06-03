@@ -1,3 +1,6 @@
+#COMMUNICATION PACKETS
+#filename: packets.py
+
 import datetime
 import hashlib
 import random

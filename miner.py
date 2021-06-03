@@ -1,3 +1,6 @@
+#MINER NODE
+#filename: miner.py
+
 from datetime import datetime
 import os
 import socket,pickle
@@ -135,7 +138,8 @@ def add_chain(vote_pack,nonce):
     vote_string = "".join(vote_pack.votes)
     temp_string = vote_string+str(nonce)
     block_hash = hashlib.sha256(temp_string.encode()).hexdigest()
-    block = Block(BLOCK_CHAIN[len(BLOCK_CHAIN)-1].block_hash,block_hash,vote_pack.votes,nonce)
+    block = Block(BLOCK_CHAIN[len(BLOCK_CHAIN)-1].block_hash,
+    block_hash,vote_pack.votes,nonce)
     BLOCK_CHAIN.append(block)
     save_chain()
 
@@ -176,7 +180,8 @@ if __name__=="__main__":
                 table.add_column("FounderID")
                 table.add_column("Block Hash")
                 table.add_column("Nonce Value")
-                table.add_row(str(pack.cycle),str(NODE_ID),str(block.block_hash),str(block.nonce))
+                table.add_row(str(pack.cycle),str(NODE_ID),
+                str(block.block_hash),str(block.nonce))
                 table1 = Table(show_header=True, header_style="bold magenta")
                 table1.add_column("Vote Data")
                 table1.add_row("\n".join(block.transactions))
@@ -184,7 +189,8 @@ if __name__=="__main__":
                 console.print(table)
                 console.print(table1)
                 print("=================================\n")
-                val_pack = ValPacket(datetime.now(),NODE_ID,block.nonce,pack.cycle)
+                val_pack = ValPacket(datetime.now(),NODE_ID,
+                block.nonce,pack.cycle)
                 val_str = pickle.dumps(val_pack)
                 squ.put(val_str)
         if wait_next_cycle==False:
@@ -193,12 +199,13 @@ if __name__=="__main__":
                     nonce_list.append(pack.nonce)
                     if validate(pack.nonce,vote_pack):
                         console = Console()
-                        table = Table(show_header=True, header_style="bold magenta")
+                        table=Table(show_header=True,header_style="bold magenta")
                         table.add_column("Cycle")
                         table.add_column("FounderID")
                         table.add_column("Nonce")
                         table.add_column("ValidatorID")
-                        table.add_row(str(pack.cycle),str(pack.founder_id),str(pack.nonce),str(NODE_ID))
+                        table.add_row(str(pack.cycle),str(pack.founder_id),
+                        str(pack.nonce),str(NODE_ID))
                         print("\n=========BLOCK VALIDATED=========")
                         console.print(table)
                         print("=================================\n")

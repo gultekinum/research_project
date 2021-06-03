@@ -1,3 +1,6 @@
+#VOTER NODE
+#filename: voter.py
+
 import os
 import socket,pickle
 import threading
@@ -61,9 +64,6 @@ class Sender(threading.Thread):
             if pack.identifier=="LST":
                 self.entr_pack.node_list=pack.content
 
-            
-
-            
     def join_network(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as conn:
             print("\n=========JOINING NETWORK========")
@@ -92,7 +92,8 @@ class Sender(threading.Thread):
             else:
                 snd_votes = self.votes[0:BLOCK_SIZE]
                 self.votes=self.votes[BLOCK_SIZE:]
-            snd_pack = VotePacket(datetime.now(),0,DEGREE,snd_votes,self.cycle)
+            snd_pack = VotePacket(datetime.now(),0,DEGREE,snd_votes,
+            self.cycle)
             console = Console()
             table = Table(show_header=True, header_style="bold magenta")
             table.add_column("Vote Data")

@@ -1,3 +1,6 @@
+#VOTE DATA PREPARER
+#filename: prepare.py
+
 import random
 from random import randint
 import sys
