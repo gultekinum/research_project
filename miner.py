@@ -22,7 +22,6 @@ STOP_FLAG = False
 NODE_ID = -1
 BLOCK_CHAIN = []
 
-
 class Listener(threading.Thread):
     def __init__(self,port,lqu):
         threading.Thread.__init__(self)
@@ -45,7 +44,6 @@ class Listener(threading.Thread):
 
                 snd_str = pickle.dumps(pack)
                 self.lqu.put(snd_str)
-
 
 class Sender(threading.Thread):
     def __init__(self,port,wqu):
@@ -143,7 +141,6 @@ def add_chain(vote_pack,nonce):
     BLOCK_CHAIN.append(block)
     save_chain()
 
-
 if __name__=="__main__":
     lqu = queue.Queue()
     squ = queue.Queue()
@@ -223,7 +220,7 @@ if __name__=="__main__":
                     val_dict[nonce]=1
                 else:
                     val_dict[nonce]+=1
-                if val_dict[nonce]>=1:
+                if val_dict[nonce]>=(active_node_count-2)/2:
                     add_chain(vote_pack,nonce)
                     val_dict[nonce]=-99999
 

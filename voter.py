@@ -16,7 +16,6 @@ from packets import EntrancePacket,VotePacket,MessagePacket
 from rich.console import Console
 from rich.table import Column, Table
 
-
 BTP_PORT_NUMBER = int(sys.argv[1])
 LOCAL_HOST ="127.0.0.1"
 DEGREE = 5
